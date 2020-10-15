@@ -61,10 +61,27 @@ func GetHandler() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
+func corsHandler(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			// handle pre-flight
+			log.Printf("Handling pre-flight (OPTIONS)")
+			w_ptr := &w
+			(*w_ptr).Header().Set("Access-Control-Allow-Origin", "*")
+			(*w_ptr).Header().Set("Access-Control-Allow-Methods", "GET")
+			(*w_ptr).Header().Set("Access-Control-Allow-Headers", "Accept")
+		} else {
+			handler(w, r)
+		}
+	}
+}
+
+type HandleFn func(http.ResponseWriter, *http.Request)
+
 func main() {
 	clnt := &http.Client{}
 	http.HandleFunc("/puzzle", GetHandler())
-	http.HandleFunc("/potd", GetPOTD(clnt))
+	http.HandleFunc("/potd", corsHandler(GetPOTD(clnt)))
 	log.Printf("starting server")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
