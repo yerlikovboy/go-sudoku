@@ -1,0 +1,25 @@
+
+apiVersion: apps/v1
+kind: Deployment  
+metadata:
+   name: gpd 
+spec:
+    selector: 
+       matchLabels:
+          run: puzzler 
+    template:
+       metadata:
+         labels: 
+           run: puzzler
+       spec:
+         containers:
+           - name: gpd
+             image: pipilok:5000/gpd
+             args: ["/bin/sh", "-c" , "/gpd", "-d", "true"]
+             env:
+                - name: "DB_HOSTNAME"
+                  value: "sudokudb-svc-couchdb"
+                - name: "DB_PORT"
+                  value: "5984"
+                - name: "DB_NO_AUTH"  
+                  value: "true"
