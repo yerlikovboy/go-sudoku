@@ -39,6 +39,14 @@ func GetPOTD(clnt *http.Client) func(http.ResponseWriter, *http.Request) {
 
 		p := db.PickPuzzle()
 		log.Printf("puzzle pick: %v", p)
+
+		js, err := json.Marshal(p)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(js)
 	}
 }
 
