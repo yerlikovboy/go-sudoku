@@ -71,17 +71,17 @@ func GetHandler() func(http.ResponseWriter, *http.Request) {
 
 func corsHandler(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w_ptr := &w
+		(*w_ptr).Header().Set("Access-Control-Allow-Origin", "*")
+		(*w_ptr).Header().Set("Access-Control-Allow-Credentials", "true")
+		(*w_ptr).Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+		(*w_ptr).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		if r.Method == "OPTIONS" {
 			// handle pre-flight
 			log.Printf("Handling pre-flight (OPTIONS)")
 		} else {
 			handler(w, r)
 		}
-		w_ptr := &w
-		(*w_ptr).Header().Set("Access-Control-Allow-Origin", "*")
-		(*w_ptr).Header().Set("Access-Control-Allow-Credentials", "true")
-		(*w_ptr).Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-		(*w_ptr).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	}
 }
 
