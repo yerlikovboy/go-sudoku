@@ -74,13 +74,14 @@ func corsHandler(handler http.HandlerFunc) http.HandlerFunc {
 		if r.Method == "OPTIONS" {
 			// handle pre-flight
 			log.Printf("Handling pre-flight (OPTIONS)")
-			w_ptr := &w
-			(*w_ptr).Header().Set("Access-Control-Allow-Origin", "*")
-			(*w_ptr).Header().Set("Access-Control-Allow-Methods", "GET")
-			(*w_ptr).Header().Set("Access-Control-Allow-Headers", "Accept")
 		} else {
 			handler(w, r)
 		}
+		w_ptr := &w
+		(*w_ptr).Header().Set("Access-Control-Allow-Origin", "*")
+		(*w_ptr).Header().Set("Access-Control-Allow-Credentials", "true")
+		(*w_ptr).Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+		(*w_ptr).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	}
 }
 
