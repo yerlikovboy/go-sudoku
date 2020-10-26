@@ -1,6 +1,5 @@
 package main
 
-// Because I wanna
 import (
 	"go-sudoku/core/db/couchdb"
 	"go-sudoku/core/generator"
@@ -10,8 +9,8 @@ import (
 )
 
 func app(isDaemon bool, nClues uint8) {
+	db := couchdb.NewDB(&http.Client{})
 	for {
-		db := couchdb.NewDB(&http.Client{})
 		g := db.Solution()
 		p := generator.Make(g, nClues)
 		db.StorePuzzle(p)
@@ -21,7 +20,6 @@ func app(isDaemon bool, nClues uint8) {
 		}
 
 	}
-
 }
 
 func main() {

@@ -9,21 +9,21 @@ import (
 
 // used for basic auth.
 type auth struct {
-	use_auth bool
-	admin    string
-	pw       string
+	useAuth bool
+	admin   string
+	pw      string
 }
 
 //TODO: does anyone outside this package need access to this?
-type Config struct {
+type config struct {
 	host  string
 	port  string
 	creds auth
 }
 
-func (c Config) SetupRequest(req *http.Request) {
+func (c config) SetupRequest(req *http.Request) {
 	// basic auth ...
-	if c.creds.use_auth {
+	if c.creds.useAuth {
 		req.SetBasicAuth(c.creds.admin, c.creds.pw)
 	}
 
@@ -34,27 +34,27 @@ func (c Config) SetupRequest(req *http.Request) {
 	req.Header.Add("Content-Type", "application/json")
 }
 
-func DefaultConfig() Config {
-	return Config{
-		host: db_hostname(),
-		port: db_port(),
+func defaultConfig() config {
+	return config{
+		host: dbHostname(),
+		port: dbPort(),
 		creds: auth{
-			use_auth: use_auth(),
-			admin:    admin(),
-			pw:       pw(),
+			useAuth: useAuth(),
+			admin:   admin(),
+			pw:      pw(),
 		},
 	}
 }
 
-func use_auth() bool {
-	use_auth := os.Getenv("DB_NO_AUTH")
-	if use_auth == "" {
+func useAuth() bool {
+	useAuth := os.Getenv("DB_NO_AUTH")
+	if useAuth == "" {
 		return true
 	}
 	return false
 }
 
-func db_port() string {
+func dbPort() string {
 	port := os.Getenv("DB_PORT")
 	if port == "" {
 		return fmt.Sprint(5984)
@@ -62,7 +62,7 @@ func db_port() string {
 	return port
 }
 
-func db_hostname() string {
+func dbHostname() string {
 	host := os.Getenv("DB_HOST")
 	if host == "" {
 		return "localhost"
@@ -80,7 +80,7 @@ func admin() string {
 
 func pw() string {
 	pw := os.Getenv("DB_PW")
-	if len(pw) == 0 && use_auth() {
+	if len(pw) == 0 && useAuth() {
 		log.Fatal("unable to retrieve db password (DB_PW not set)")
 	}
 	return pw

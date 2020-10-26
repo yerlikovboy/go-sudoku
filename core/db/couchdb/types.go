@@ -15,7 +15,7 @@ type grid struct {
 
 type DBInfo struct {
 	Name     string `json:"db_name"`
-	DocCount int32  `json:"doc_count"`
+	DocCount uint32 `json:"doc_count"`
 }
 
 type puzzle_selector struct {
@@ -25,7 +25,7 @@ type puzzle_selector struct {
 type puzzle_request struct {
 	Selector puzzle_selector `json:"selector"`
 	Limit    uint8           `json:"limit"`
-	Skip     int32           `json:"skip"`
+	Skip     uint32          `json:"skip"`
 }
 
 type puzzle_request_result struct {
@@ -35,7 +35,7 @@ type puzzle_request_result struct {
 	} `json:"rows"`
 }
 
-func NewPuzzleRequest(nl int32) puzzle_request {
+func NewPuzzleRequest(nl uint32) puzzle_request {
 	return puzzle_request{
 		Selector: puzzle_selector{
 			NClues: 38,
