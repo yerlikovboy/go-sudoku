@@ -12,19 +12,21 @@ import (
 	"go-sudoku/core/types"
 )
 
+//CouchSudokuDB ...
 type CouchSudokuDB struct {
 	clnt *http.Client
-	cfg  Config
+	cfg  config
 }
 
+//NewDB ...
 func NewDB(clnt *http.Client) db.SudokuDB {
 	return CouchSudokuDB{
 		clnt: &http.Client{},
-		cfg:  DefaultConfig(),
+		cfg:  defaultConfig(),
 	}
 }
 
-func (s CouchSudokuDB) puzzle_count() uint32 {
+func (s CouchSudokuDB) puzzleCount() uint32 {
 
 	req, _ := http.NewRequest("GET", "http://hostname:5984/grids/_design/puzzles/_view/completed", nil)
 	s.cfg.SetupRequest(req)
@@ -53,7 +55,7 @@ func (s CouchSudokuDB) puzzle_count() uint32 {
 	return val.TotalRows
 }
 
-func (s CouchSudokuDB) nth_grid(n uint32) grid {
+func (s CouchSudokuDB) nthGrid(n uint32) grid {
 
 	// log.Printf("pick #%v from view", n)
 
@@ -90,10 +92,11 @@ func (s CouchSudokuDB) nth_grid(n uint32) grid {
 	return r.Rows[0]
 }
 
+//Solution implementation for CouchDB
 func (s CouchSudokuDB) Solution() types.Board {
-	rowCount := s.puzzle_count()
+	rowCount := s.puzzleCount()
 	pick := uint32(rand.Int31n(int32(rowCount)))
-	grid := s.nth_grid(pick)
+	grid := s.nthGrid(pick)
 	var c types.Grid
 	copy(c[:], grid.Value[0:81])
 
@@ -102,7 +105,7 @@ func (s CouchSudokuDB) Solution() types.Board {
 		WithID(grid.ID)
 }
 
-func (s CouchSudokuDB) getPuzzleCount() int32 {
+func (s CouchSudokuDB) getPuzzleCount() uint32 {
 	req, _ := http.NewRequest("GET", "http://localhost:5984/puzzles", nil)
 	s.cfg.SetupRequest(req)
 
@@ -124,16 +127,16 @@ func (s CouchSudokuDB) getPuzzleCount() int32 {
 	return r.DocCount
 }
 
+//PickPuzzle implementation for CouchDB
 func (s CouchSudokuDB) PickPuzzle() types.Puzzle {
-	puzzle_count := s.getPuzzleCount()
-	pick := rand.Int31n(puzzle_count)
+	pick := rand.Int31n(int32(s.getPuzzleCount()))
 
-	req_body, req_err := json.Marshal(NewPuzzleRequest(pick))
-	if req_err != nil {
-		log.Fatal(req_err)
+	reqBody, reqErr := json.Marshal(NewPuzzleRequest(uint32(pick)))
+	if reqErr != nil {
+		log.Fatal(reqErr)
 	}
-	log.Printf("pick puzzle req: %s", req_body)
-	req, _ := http.NewRequest("POST", "http://localhost:5984/puzzles/_all_docs", bytes.NewBuffer(req_body))
+	log.Printf("pick puzzle req: %s", reqBody)
+	req, _ := http.NewRequest("POST", "http://localhost:5984/puzzles/_all_docs", bytes.NewBuffer(reqBody))
 	s.cfg.SetupRequest(req)
 	qry := req.URL.Query()
 	qry.Add("limit", "1")
@@ -142,11 +145,11 @@ func (s CouchSudokuDB) PickPuzzle() types.Puzzle {
 	req.URL.RawQuery = qry.Encode()
 
 	log.Printf("request: %v", req)
-	puzzle_res, res_err := s.clnt.Do(req)
-	if res_err != nil {
-		log.Fatal(res_err)
+	puzzleRes, resErr := s.clnt.Do(req)
+	if resErr != nil {
+		log.Fatal(resErr)
 	}
-	decoder := json.NewDecoder(puzzle_res.Body)
+	decoder := json.NewDecoder(puzzleRes.Body)
 	var r puzzle_request_result
 	err := decoder.Decode(&r)
 	if err != nil {
@@ -159,6 +162,7 @@ func (s CouchSudokuDB) PickPuzzle() types.Puzzle {
 	return p.Doc
 }
 
+//StorePuzzle implementation for CouchDB
 func (s CouchSudokuDB) StorePuzzle(b types.Board) {
 	// for now, just print it to console
 	p := types.FromBoard(b)
