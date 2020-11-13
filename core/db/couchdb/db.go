@@ -13,16 +13,17 @@ const docURL = "http://hostname:5984/%s/%s"
 //DB ...
 type DB struct {
 	Name string
-	clnt *http.Client
-	cfg  config
+	clnt *couchDBClient
 }
 
 //NewDatabase ..
-func NewDatabase(dbname string, client *http.Client) DB {
+func NewDatabase(dbname string) DB {
 	return DB{
 		Name: dbname,
-		clnt: client,
-		cfg:  defaultConfig(),
+		clnt: &couchDBClient{
+			clnt: &http.Client{},
+			cfg:  defaultConfig(),
+		},
 	}
 }
 
@@ -34,7 +35,6 @@ func (db DB) DocCount() uint32 {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.cfg.SetupRequest(req)
 
 	res, err := db.clnt.Do(req)
 	if err != nil {
@@ -54,12 +54,11 @@ func (db DB) DocCount() uint32 {
 func (db DB) GetDocByID(id string, docPtr interface{}) {
 
 	urlStr := fmt.Sprintf(docURL, db.Name, id)
-	log.Printf("retrieving doc %s", urlStr)
+
 	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.cfg.SetupRequest(req)
 
 	res, err := db.clnt.Do(req)
 	if err != nil {
