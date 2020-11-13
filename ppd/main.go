@@ -22,7 +22,7 @@ func getID(v url.Values) string {
 }
 
 func getPuzzle(clnt *http.Client) func(http.ResponseWriter, *http.Request) {
-	db := couchdb.NewDatabase("puzzles", &http.Client{})
+	db := couchdb.NewDatabase("puzzles")
 
 	return func(w http.ResponseWriter, req *http.Request) {
 		id := getID(req.URL.Query())

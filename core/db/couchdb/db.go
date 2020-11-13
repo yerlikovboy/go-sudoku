@@ -17,7 +17,7 @@ type DB struct {
 }
 
 //NewDatabase ..
-func NewDatabase(dbname string, client *http.Client) DB {
+func NewDatabase(dbname string) DB {
 	return DB{
 		Name: dbname,
 		clnt: &couchDBClient{
