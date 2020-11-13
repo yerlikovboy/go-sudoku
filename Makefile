@@ -12,7 +12,7 @@ ppd:
 
 .PHONY: ppd-docker 
 ppd-docker:
-	@cd ppd && docker build -t ppd . 
+	docker build -f Dockerfile.ppd  -t ppd . 
 
 clean:
 	@cd gpd && go clean .
