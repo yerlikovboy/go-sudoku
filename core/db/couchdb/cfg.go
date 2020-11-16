@@ -3,7 +3,6 @@ package couchdb
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -14,13 +13,13 @@ type auth struct {
 	pw      string
 }
 
-//TODO: does anyone outside this package need access to this?
 type config struct {
 	host  string
 	port  string
 	creds auth
 }
 
+/*
 func (c config) SetupRequest(req *http.Request) {
 	// basic auth ...
 	if c.creds.useAuth {
@@ -33,6 +32,7 @@ func (c config) SetupRequest(req *http.Request) {
 	// header
 	req.Header.Add("Content-Type", "application/json")
 }
+*/
 
 func defaultConfig() config {
 	return config{

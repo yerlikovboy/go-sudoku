@@ -14,22 +14,22 @@ import (
 
 //CouchSudokuDB ...
 type CouchSudokuDB struct {
-	clnt *http.Client
-	cfg  config
+	clnt *couchDBClient
 }
 
 //NewDB ...
 func NewDB(clnt *http.Client) db.SudokuDB {
 	return CouchSudokuDB{
-		clnt: &http.Client{},
-		cfg:  defaultConfig(),
+		clnt: &couchDBClient{
+			clnt: clnt,
+			cfg:  defaultConfig(),
+		},
 	}
 }
 
 func (s CouchSudokuDB) puzzleCount() uint32 {
 
 	req, _ := http.NewRequest("GET", "http://hostname:5984/grids/_design/puzzles/_view/completed", nil)
-	s.cfg.SetupRequest(req)
 
 	// the way query is set is so lame ...
 	q := req.URL.Query()
@@ -60,7 +60,6 @@ func (s CouchSudokuDB) nthGrid(n uint32) grid {
 	// log.Printf("pick #%v from view", n)
 
 	req, _ := http.NewRequest("GET", "http://localhost:5984/grids/_design/puzzles/_view/completed", nil)
-	s.cfg.SetupRequest(req)
 
 	// the way query is set is bullshit!
 	qry := req.URL.Query()
@@ -107,7 +106,6 @@ func (s CouchSudokuDB) Solution() types.Board {
 
 func (s CouchSudokuDB) getPuzzleCount() uint32 {
 	req, _ := http.NewRequest("GET", "http://localhost:5984/puzzles", nil)
-	s.cfg.SetupRequest(req)
 
 	resp, err := s.clnt.Do(req)
 	if err != nil {
@@ -137,7 +135,6 @@ func (s CouchSudokuDB) PickPuzzle() types.Puzzle {
 	}
 	log.Printf("pick puzzle req: %s", reqBody)
 	req, _ := http.NewRequest("POST", "http://localhost:5984/puzzles/_all_docs", bytes.NewBuffer(reqBody))
-	s.cfg.SetupRequest(req)
 	qry := req.URL.Query()
 	qry.Add("limit", "1")
 	qry.Add("skip", fmt.Sprint(pick))
@@ -170,7 +167,6 @@ func (s CouchSudokuDB) StorePuzzle(b types.Board) {
 	fmt.Println(string(raw))
 
 	req, _ := http.NewRequest("POST", "http://localhost:5984/puzzles", bytes.NewBuffer(raw))
-	s.cfg.SetupRequest(req)
 
 	resp, err := s.clnt.Do(req)
 	if err != nil {

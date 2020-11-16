@@ -1,8 +1,10 @@
 package couchdb
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"go-sudoku/core/types"
 	"log"
 	"net/http"
 )
@@ -72,4 +74,54 @@ func (db DB) GetDocByID(id string, docPtr interface{}) {
 	}
 
 	log.Printf("doc: %v", docPtr)
+}
+
+func (db DB) StoreDoc(b types.Board) {
+	urlStr := fmt.Sprintf(dbURL, db.Name)
+
+	payload, err := getPayload(b)
+	if err != nil {
+		log.Printf("error: %v", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", urlStr, bytes.NewBuffer(payload))
+	if err != nil {
+		log.Printf("error creating request: %v", err)
+		return
+	}
+
+	resp, err := db.clnt.Do(req)
+	if err != nil {
+		log.Printf("error storing document: %v", err)
+		return
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		log.Printf("unexpected response from doc upload: %v", resp)
+	} else {
+		log.Printf("document was stored successfully")
+	}
+
+}
+
+func getPayload(b types.Board) ([]byte, error) {
+
+	type puzzle struct {
+		ID              string     `json:"_id,omitempty"`
+		NumClues        uint8      `json:"n_clues"`
+		Cells           types.Grid `json:"grid"`
+		SolutionID      string     `json:"solution_id"`
+		GeneratedMillis uint64     `json:"generated_millis"`
+	}
+
+	p := puzzle{
+		NumClues:        b.NumClues(),
+		Cells:           b.Cells(),
+		SolutionID:      b.DerivedFromID(),
+		GeneratedMillis: b.CreatedTS(),
+	}
+
+	return json.Marshal(p)
+
 }

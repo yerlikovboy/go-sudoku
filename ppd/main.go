@@ -43,25 +43,6 @@ func getPuzzle(clnt *http.Client) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-// GetHandler sets up db access object and retuns handler. This way handler
-// does not have to create new db object each time it is called
-func GetHandler() func(http.ResponseWriter, *http.Request) {
-	db := couchdb.NewDB(&http.Client{})
-
-	return func(w http.ResponseWriter, req *http.Request) {
-		log.Printf("req: %v", req)
-		p := db.PickPuzzle()
-		log.Printf("puzzle pick: %v", p)
-		js, err := json.Marshal(p)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(js)
-	}
-}
-
 func corsHandler(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		wPtr := &w

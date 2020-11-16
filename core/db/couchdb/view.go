@@ -40,8 +40,6 @@ func (v View) DocCount() uint32 {
 		log.Fatal(err)
 	}
 
-	v.cfg.SetupRequest(req)
-
 	q := req.URL.Query()
 	q.Add("limit", "1")
 	req.URL.RawQuery = q.Encode()
